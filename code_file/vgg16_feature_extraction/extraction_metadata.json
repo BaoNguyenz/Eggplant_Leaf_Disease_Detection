@@ -1,0 +1,21 @@
+{
+    "extraction_date": "2026-01-29T21:25:17.189795",
+    "model": "VGG16",
+    "feature_dim": 512,
+    "num_samples": 4089,
+    "num_classes": 6,
+    "class_names": [
+        "Healthy Leaf",
+        "Insect_Pest_Disease",
+        "Leaf_Spot_Disease",
+        "Mosaic_Virus_Disease",
+        "White_Mold_Disease",
+        "Wilt_Disease"
+    ],
+    "extraction_time_seconds": 104.86,
+    "image_size": [
+        224,
+        224
+    ],
+    "batch_size": 32
+}

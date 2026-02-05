@@ -1,0 +1,15 @@
+Classification Report
+============================================================
+
+                      precision    recall  f1-score   support
+
+        Healthy Leaf     0.2931    0.1069    0.1567       159
+ Insect Pest Disease     0.1165    0.2308    0.1548        52
+   Leaf Spot Disease     0.1750    0.1273    0.1474        55
+Mosaic Virus Disease     0.3086    0.4060    0.3506       133
+  White Mold Disease     0.0303    0.1667    0.0513         6
+        Wilt Disease     0.0000    0.0000    0.0000         5
+
+            accuracy                         0.2220       410
+           macro avg     0.1539    0.1729    0.1435       410
+        weighted avg     0.2525    0.2220    0.2147       410

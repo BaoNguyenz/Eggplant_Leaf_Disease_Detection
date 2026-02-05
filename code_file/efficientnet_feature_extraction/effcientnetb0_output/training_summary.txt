@@ -1,0 +1,28 @@
+======================================================================
+EFFICIENTNET-B0 TRAINING SUMMARY
+======================================================================
+
+Model: EfficientNet-B0 (Pretrained)
+Input Resolution: 224x224
+Dataset: /kaggle/input/eggplant-leaf-disease/Eggplant Dataset/Classified Images
+Number of Classes: 6
+Classes: ['Healthy Leaf', 'Insect Pest Disease', 'Leaf Spot Disease', 'Mosaic Virus Disease', 'White Mold Disease', 'Wilt Disease']
+
+Training Configuration:
+  Device: cuda:0
+  Epochs: 100
+  Batch Size: 8
+  Learning Rate: 0.0001
+  LR Scheduler: Disabled
+  Loss Function: focal
+  Early Stopping Patience: 25
+
+Best Validation F1-Score: 0.7060 (Epoch 44)
+
+Test Set Results:
+  Accuracy:  0.6333
+  Precision: 0.6704
+  Recall:    0.6333
+  F1-Score:  0.6414
+
+======================================================================

@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# IDEs
+.idea/
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Compressed Archives
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+*.tar.gz
+
+# Model Weights & Checkpoints (Large files -> Ignored)
+*.pth
+*.pt
+*.safetensors
+*.bin
+*.h5
+
+# Large Data & Features (Excluded to reduce repo size)
+*.csv
+csv_data/
+
+# Logs & Training Results
+*.log
+logs/
+runs/
+tensorboard/
+*_results/
+checkpoints/
+output/
+catboost_info/
+
+# Specific Heavy Folders/Files
+Eggplant Dataset/
+Eggplant Leaf Disease Detection Dataset.pdf
+GIT_FLOW_GUIDE.md
+Eggplant Dataset\structure.txt
