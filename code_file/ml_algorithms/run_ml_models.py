@@ -9,6 +9,9 @@ from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
+from tqdm import tqdm
+import seaborn as sns
+import argparse
 import os
 
 # Cố gắng import các thư viện boosting
@@ -26,8 +29,8 @@ def run_ml_experiment_full(file_path, output_csv='machine_learning_results.csv')
     print(f"Loading data from: {file_path}")
     df = pd.read_csv(file_path)
     
-    X = df.drop('label', axis=1)
-    y = df['label']
+    X = df.drop('class_name', axis=1)
+    y = df['class_name']
     
     # Label Encoding
     le = LabelEncoder()
@@ -75,13 +78,14 @@ def run_ml_experiment_full(file_path, output_csv='machine_learning_results.csv')
     # Thứ tự mong muốn trong CSV
     desired_order = ['KNN', 'SVM', 'Random Forest', 'Logistic Regression', 'XGBoost', 'CatBoost', 'Extra Trees', 'LightGBM']
     
-    for name in desired_order:
-        # Kiểm tra xem model có trong danh sách models không (phòng trường hợp thiếu thư viện)
-        if name not in models:
-            continue
-            
+    # Lọc ra các model có sẵn
+    available_models = [name for name in desired_order if name in models]
+    
+    # Sử dụng tqdm để theo dõi tiến trình
+    for name in tqdm(available_models, desc="🔄 Training Models", unit="model", 
+                     bar_format='{l_bar}{bar:30}{r_bar}{bar:-10b}'):
         model = models[name]
-        print(f" -> Đang chạy: {name}")
+        tqdm.write(f"  📊 Đang huấn luyện: {name}")
         
         try:
             # Tính Metrics
@@ -112,7 +116,9 @@ def run_ml_experiment_full(file_path, output_csv='machine_learning_results.csv')
             })
             
         except Exception as e:
-            print(f"Lỗi khi chạy {name}: {e}")
+            import traceback
+            tqdm.write(f"  ❌ Lỗi khi chạy {name}: {e}")
+            tqdm.write(traceback.format_exc())
             
     # 4. Xuất kết quả ra CSV
     results_df = pd.DataFrame(results)
@@ -124,8 +130,31 @@ def run_ml_experiment_full(file_path, output_csv='machine_learning_results.csv')
     print("Đã lưu các hình ảnh Confusion Matrix trong thư mục 'confusion_matrices'")
 
 if __name__ == "__main__":
-    # Thay đường dẫn file của bạn vào đây
-    input_file = r"E:\PROJECTWORSHOP\Eggplant Leaf Disease Detection Dataset\code_file\ml_algorithms\csv_deeplearning_features\resnet34_features.csv"
+    parser = argparse.ArgumentParser(
+        description='🌿 Huấn luyện và đánh giá các model Machine Learning trên dữ liệu features',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Ví dụ sử dụng:
+  python run_ml_models.py --data_dir vgg16_features.csv
+  python run_ml_models.py --data_dir features.csv --output results.csv
+        """
+    )
     
-    # Chạy
-    run_ml_experiment_full(input_file)
+    parser.add_argument(
+        '--data_dir', 
+        type=str, 
+        required=True,
+        help='Đường dẫn đến file CSV chứa features (bắt buộc)'
+    )
+    
+    parser.add_argument(
+        '--output', 
+        type=str, 
+        default='machine_learning_results.csv',
+        help='Đường dẫn file CSV kết quả (mặc định: machine_learning_results.csv)'
+    )
+    
+    args = parser.parse_args()
+    
+    # Chạy experiment
+    run_ml_experiment_full(args.data_dir, args.output)
