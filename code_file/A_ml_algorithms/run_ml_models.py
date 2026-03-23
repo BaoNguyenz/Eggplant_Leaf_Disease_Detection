@@ -50,13 +50,13 @@ def run_ml_experiment_full(file_path, output_csv='machine_learning_results.csv')
     
     if BOOSTING_AVAILABLE:
         models.update({
-            'XGBoost': xgb.XGBClassifier(eval_metric='mlogloss', random_state=42),
-            'CatBoost': cb.CatBoostClassifier(verbose=0, random_state=42),
+            'XGBoost': xgb.XGBClassifier(eval_metric='mlogloss', random_state=42, device='gpu'),
+            'CatBoost': cb.CatBoostClassifier(verbose=0, random_state=42, task_type="GPU", devices='0'),
             'LightGBM': lgb.LGBMClassifier(random_state=42, verbose=-1)
         })
     
     # 3. Cấu hình Cross Validation
-    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cv = StratifiedKFold(n_splits=5, random_state=42)
     scoring = {
         'accuracy': 'accuracy',
         'precision': 'precision_weighted',

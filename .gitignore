@@ -70,3 +70,10 @@ Eggplant Dataset/
 Eggplant Leaf Disease Detection Dataset.pdf
 GIT_FLOW_GUIDE.md
 Eggplant Dataset\structure.txt
+
+*.bkp
+*.drawio
+*.pdf
+*.png
+*.html
+*.json

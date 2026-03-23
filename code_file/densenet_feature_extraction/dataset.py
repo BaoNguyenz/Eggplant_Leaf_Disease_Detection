@@ -10,6 +10,7 @@ from PIL import Image
 import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
+import re
 
 import config
 
@@ -57,18 +58,25 @@ class ImageDataset(Dataset):
         
         if not class_dirs:
             raise ValueError(f"No class directories found in {self.data_dir}")
+            
+        def natural_sort_key(s):
+            """Sort string naturally (e.g., 'image_2' before 'image_10')."""
+            return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', str(s))]
         
-        # Sort class names for consistent ordering
-        self.class_names = sorted([d.name for d in class_dirs])
+        # Sort class names for consistent and natural ordering
+        self.class_names = sorted([d.name for d in class_dirs], key=natural_sort_key)
         
         # Load all images
-        for class_dir in sorted(class_dirs):
+        for class_dir in sorted(class_dirs, key=lambda d: natural_sort_key(d.name)):
             class_name = class_dir.name
             
-            for img_path in class_dir.iterdir():
-                if img_path.suffix.lower() in valid_extensions:
-                    self.image_paths.append(img_path)
-                    self.labels.append(class_name)
+            # Get all images in class and sort them naturally
+            img_paths = [p for p in class_dir.iterdir() if p.suffix.lower() in valid_extensions]
+            img_paths = sorted(img_paths, key=lambda p: natural_sort_key(p.name))
+            
+            for img_path in img_paths:
+                self.image_paths.append(img_path)
+                self.labels.append(class_name)
         
         if len(self.image_paths) == 0:
             raise ValueError(f"No images found in {self.data_dir}")

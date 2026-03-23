@@ -67,7 +67,7 @@ DEVICE: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cp
 # ============================================================================
 
 # Output CSV filename
-OUTPUT_CSV_NAME: str = "densenet121_features.csv"
+OUTPUT_CSV_NAME: str = "densenet121_features_notest.csv"
 
 # File encoding for Windows compatibility
 FILE_ENCODING: str = "utf-8"

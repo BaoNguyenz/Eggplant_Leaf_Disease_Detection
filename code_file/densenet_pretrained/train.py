@@ -121,10 +121,14 @@ def train_model(args):
     print(f"Data directory: {args.data_dir}")
     print(f"Output directory: {args.output_dir}")
     print(f"Loss type: {args.loss_type}")
+    print(f"Split ratio: {args.split_ratio}")
     print(f"{'='*60}\n")
     
     # Create output directory
     output_dir = check_dir(args.output_dir)
+    
+    # Parse split_ratio từ CLI args
+    split_ratio = tuple(args.split_ratio)
     
     # Create dataloaders
     print("Creating dataloaders...")
@@ -132,7 +136,8 @@ def train_model(args):
         data_dir=args.data_dir,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
-        seed=args.seed
+        seed=args.seed,
+        split_ratio=split_ratio
     )
     
     num_classes = len(class_names)
@@ -257,39 +262,47 @@ def train_model(args):
         json.dump(history, f, indent=2)
     print(f"\nSaved training history to: {history_file}")
     
-    # Test on test set with best model
-    print(f"\n{'='*60}")
-    print("Evaluating on Test Set...")
-    print(f"{'='*60}\n")
-    
     # Load best model
     checkpoint = torch.load(output_dir / 'best_model.pth')
     model.load_state_dict(checkpoint['model_state_dict'])
     
-    # Test
-    test_metrics = validate(model, test_loader, criterion, device, epoch=best_epoch, phase="Test")
+    # ===================================================================
+    # Test on test set — CHỈ chạy nếu test_loader tồn tại
+    # ===================================================================
+    if test_loader is not None:
+        print(f"\n{'='*60}")
+        print("Evaluating on Test Set...")
+        print(f"{'='*60}\n")
+        
+        test_metrics = validate(model, test_loader, criterion, device, epoch=best_epoch, phase="Test")
+        
+        print(f"\n[Test] Loss: {test_metrics['loss']:.4f} | "
+              f"Acc: {test_metrics['accuracy']:.4f} | "
+              f"Prec: {test_metrics['precision']:.4f} | "
+              f"Rec: {test_metrics['recall']:.4f} | "
+              f"F1: {test_metrics['f1_score']:.4f}")
+        
+        # Save test results
+        test_results = {
+            'test_metrics': test_metrics,
+            'best_epoch': best_epoch,
+            'best_val_f1': best_f1,
+            'training_time_minutes': training_time / 60,
+            'class_names': class_names
+        }
+        
+        test_results_file = output_dir / 'test_results.json'
+        with open(test_results_file, 'w') as f:
+            json.dump(test_results, f, indent=2)
+        print(f"\nSaved test results to: {test_results_file}")
+    else:
+        print(f"\n{'='*60}")
+        print("⚠ Bỏ qua bước Test Dataset do split_ratio tỷ lệ test = 0")
+        print(f"{'='*60}")
     
-    print(f"\n[Test] Loss: {test_metrics['loss']:.4f} | "
-          f"Acc: {test_metrics['accuracy']:.4f} | "
-          f"Prec: {test_metrics['precision']:.4f} | "
-          f"Rec: {test_metrics['recall']:.4f} | "
-          f"F1: {test_metrics['f1_score']:.4f}")
-    
-    # Save test results
-    test_results = {
-        'test_metrics': test_metrics,
-        'best_epoch': best_epoch,
-        'best_val_f1': best_f1,
-        'training_time_minutes': training_time / 60,
-        'class_names': class_names
-    }
-    
-    test_results_file = output_dir / 'test_results.json'
-    with open(test_results_file, 'w') as f:
-        json.dump(test_results, f, indent=2)
-    print(f"\nSaved test results to: {test_results_file}")
-    
+    # ===================================================================
     # Generate visualizations
+    # ===================================================================
     print(f"\n{'='*60}")
     print("Generating Visualizations...")
     print(f"{'='*60}\n")
@@ -297,11 +310,18 @@ def train_model(args):
     # Plot training curves
     plot_training_history(history, output_dir)
     
-    # Plot confusion matrix on test set
-    test_metrics_with_preds, test_preds, test_labels = validate(
-        model, test_loader, criterion, device, epoch=best_epoch, phase="Test (CM)", return_preds=True
+    # Plot confusion matrix: dùng test_loader nếu có, ngược lại dùng val_loader
+    if test_loader is not None:
+        cm_loader = test_loader
+        cm_phase = "Test (CM)"
+    else:
+        cm_loader = val_loader
+        cm_phase = "Val (CM — no test set)"
+    
+    cm_metrics, cm_preds, cm_labels = validate(
+        model, cm_loader, criterion, device, epoch=best_epoch, phase=cm_phase, return_preds=True
     )
-    plot_confusion_matrix(test_labels, test_preds, class_names, output_dir)
+    plot_confusion_matrix(cm_labels, cm_preds, class_names, output_dir)
     
     print(f"\n{'='*60}")
     print("All done! ✓")
@@ -350,6 +370,18 @@ def parse_args():
         type=int,
         default=10,
         help='Early stopping patience (0 to disable)'
+    )
+    
+    # Split ratio
+    parser.add_argument(
+        '--split_ratio',
+        type=float,
+        nargs=3,
+        default=[0.8, 0.1, 0.1],
+        metavar=('TRAIN', 'VAL', 'TEST'),
+        help='Tỷ lệ chia tập dữ liệu Train Val Test. '
+             'Ví dụ: --split_ratio 0.8 0.1 0.1 (có test) hoặc '
+             '--split_ratio 0.8 0.2 0.0 (không test). Tổng sẽ tự chuẩn hóa về 1.0.'
     )
     
     return parser.parse_args()
